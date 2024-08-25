@@ -1024,7 +1024,6 @@ body.dark-theme {
 
 
 /* Move label up & sticky label */
-
 .contact__input:focus+.contact__label,
 .contact__input:not(:placeholder-shown).contact__input:not(:focus)+.contact__label {
   opacity: 1;
