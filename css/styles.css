@@ -1030,6 +1030,11 @@ body.dark-theme {
   top: -16px;
 }
 
+.insta {
+  text-decoration: none;
+  color: white;
+}
+
 .contact__social {
   display: grid;
   row-gap: 1rem;
