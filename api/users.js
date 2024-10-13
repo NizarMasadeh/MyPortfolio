@@ -1,40 +1,25 @@
-import { MongoClient } from 'mongodb';
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://nizarmasadeh2001:nizaR123@users.dbgaj.mongodb.net/?retryWrites=true&w=majority&appName=users";
 
-const uri = process.env.MONGODB_URI;
 
-export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    try {
-     
-      const client = new MongoClient(uri);
-      await client.connect();
-      const db = client.db('mrnzdDB');
-      const collection = db.collection('users');
 
-      
-      const { email, username, password } = req.body;
-
-      
-      if (!email || !username || !password) {
-        return res.status(400).json({ error: 'All fields are required.' });
-      }
-
-      
-      const newUser = { email, username, password };
-      const result = await collection.insertOne(newUser);
-
-      // Close the database connection
-      await client.close();
-
-      // Respond with success message
-      return res.status(201).json({ message: 'User created successfully!', userId: result.insertedId });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Failed to create user.' });
-    }
-  } else {
-    // Handle any other HTTP method
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+async function run() {
+  try {
+    // Connect the client to the server	(optional starting in v4.7)
+    await client.connect();
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
   }
 }
+run().catch(console.dir);
