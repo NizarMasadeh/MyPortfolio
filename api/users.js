@@ -1,34 +1,40 @@
 import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
 
 export default async function handler(req, res) {
-    if (req.method === 'POST') {
-        const { email, username, password } = req.body;
+  if (req.method === 'POST') {
+    try {
+     
+      const client = new MongoClient(uri);
+      await client.connect();
+      const db = client.db('mrnzdDB');
+      const collection = db.collection('users');
 
-        if (!email || !username || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
+      
+      const { email, username, password } = req.body;
 
-        try {
-            await client.connect();
-            const database = client.db('mrnzdDB');
-            const usersCollection = database.collection('users');
-            const existingUser = await usersCollection.findOne({ email });
-            if (existingUser) {
-                return res.status(400).json({ message: 'User already exists' });
-            }
-            const newUser = { email, username, password };
-            await usersCollection.insertOne(newUser);
-            return res.status(201).json({ message: 'User registered successfully' });
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({ message: 'Internal Server Error' });
-        } finally {
-            await client.close();
-        }
-    } else {
-        return res.status(405).json({ message: 'Method not allowed' });
+      
+      if (!email || !username || !password) {
+        return res.status(400).json({ error: 'All fields are required.' });
+      }
+
+      
+      const newUser = { email, username, password };
+      const result = await collection.insertOne(newUser);
+
+      // Close the database connection
+      await client.close();
+
+      // Respond with success message
+      return res.status(201).json({ message: 'User created successfully!', userId: result.insertedId });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Failed to create user.' });
     }
+  } else {
+    // Handle any other HTTP method
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
 }
